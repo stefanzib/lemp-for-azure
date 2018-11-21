@@ -26,7 +26,7 @@ ENV HOME_SITE "/var/www/html"
 # --------
 RUN set -ex \
     && apk update \
-    && apk add --no-cache openssl git net-tools tcpdump tcptraceroute vim curl wget bash\
+    && apk add --no-cache openssl git net-tools tcpdump tcptraceroute vim curl wget bash zip htop nodejs nodejs-npm libxml2-dev \
 	&& cd /usr/bin \
 	&& wget http://www.vdberg.org/~richard/tcpping \
 	&& chmod 777 tcpping \
@@ -36,11 +36,52 @@ RUN set -ex \
     && apk add --no-cache --virtual build-dependencies icu-dev \
     libxml2-dev freetype-dev libpng-dev libjpeg-turbo-dev g++ make autoconf \
     && docker-php-source extract \
-    && pecl install xdebug-beta \
+#    && pecl install xdebug-beta \
     && docker-php-ext-install mysqli \
     && docker-php-source delete \
     && apk del build-dependencies \
     && apk del libmcrypt-dev \
+	
+# ------
+# imagick
+# ------
+    # Add packages to compile the libraries
+    && apk add --no-cache autoconf g++ libtool make \
+
+    # GD
+    && apk add --no-cache freetype-dev libjpeg-turbo-dev libxml2-dev libpng-dev \
+    && docker-php-ext-configure gd \
+        --with-gd \
+        --with-freetype-dir=/usr/include/ \
+        --with-png-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd \
+
+    # Clear after install GD
+    && apk del --no-cache freetype-dev libjpeg-turbo-dev libxml2-dev \
+
+    # Clear
+    && apk del --no-cache autoconf g++ libtool make \
+    && rm -rf /tmp/* /var/cache/apk/* \
+	
+# ------
+# imagick
+# ------
+	&& apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
+    && export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
+    && pecl install imagick-3.4.3 \
+    && docker-php-ext-enable imagick \
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
+    && apk del .phpize-deps	\
+	
+# ------
+# others
+# ------
+#	&& docker-php-ext-configure opcache --enable-opcache \
+#	&& docker-php-ext-install iconv pdo_mysql intl xsl json soap dom zip opcache \
+#	&& docker-php-ext-enable iconv pdo_mysql intl xsl json soap dom zip opcache \
+#   && docker-php-source delete \
+	
 # ------
 # ssh
 # ------
@@ -55,6 +96,7 @@ RUN set -ex \
 #---------------
    && apk add --no-cache openrc \
    && sed -i 's/"cgroup_add_service/" # cgroup_add_service/g' /lib/rc/sh/openrc-run.sh
+   
 # ----------
 # Nginx
 # ----------   
@@ -189,6 +231,25 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	# forward request and error logs to docker log collector
 	&& ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
+	
+	
+# -------------
+# Others
+# -------------
+#RUN docker-php-ext-install iconv pdo_mysql intl xsl json soap dom zip opcache	
+RUN docker-php-ext-install iconv pdo_mysql zip opcache
+	
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN { \
+		echo 'opcache.memory_consumption=128'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4000'; \
+		echo 'opcache.revalidate_freq=2'; \
+		echo 'opcache.fast_shutdown=1'; \
+		echo 'opcache.enable_cli=1'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+	
 # -------------
 # phpmyadmin
 # -------------
@@ -220,11 +281,13 @@ RUN set -ex\
     ##	
     # && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
 #	
+RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
+COPY laravel.ini $PHP_INI_DIR/conf.d/laravel.ini
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer 
 # ssh
 COPY sshd_config /etc/ssh/ 
 # php
-COPY php.ini /usr/local/etc/php/php.ini
-COPY xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+RUN mv $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 COPY www.conf /usr/local/etc/php/conf.d/www.conf
 COPY zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 # nginx
@@ -236,11 +299,14 @@ COPY phpmyadmin-config.inc.php $PHPMYADMIN_SOURCE/
 COPY mariadb.cnf /etc/mysql/
 COPY phpmyadmin-default.conf $PHPMYADMIN_SOURCE/phpmyadmin-default.conf
 RUN \
-   echo "<?php phpinfo();" > /var/www/html/index.php 
+   echo "v0.3<?php phpinfo();" > /var/www/html/index.php 
 # =====
 # final
 # =====
 COPY init_container.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init_container.sh
+#RUN chmod 777 /usr/local/bin/init_container.sh
 EXPOSE 2222 80
-ENTRYPOINT ["init_container.sh"]
+#ENTRYPOINT ["init_container.sh"]
+#ENTRYPOINT ["sh", "init_container.sh"]
+CMD ["/usr/local/bin/init_container.sh"]
