@@ -19,7 +19,8 @@ ENV MARIADB_LOG_DIR "/home/LogFiles/mysql"
 ENV PHPMYADMIN_SOURCE "/usr/src/phpmyadmin"
 ENV PHPMYADMIN_HOME "/var/www/phpmyadmin"
 #Web Site Home
-ENV HOME_SITE "/var/www/html"
+#ENV HOME_SITE "/var/www/html"
+ENV HOME_SITE "/home/site/wwwroot"
 
 # --------
 # ~. tools
