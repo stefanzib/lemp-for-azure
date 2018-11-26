@@ -277,9 +277,9 @@ RUN set -ex\
 	&& rm -rf /var/log/nginx \
 	&& ln -s $NGINX_LOG_DIR /var/log/nginx \
 	##
-        && ln -s ${HOME_SITE} /var/www/wwwroot \
-        ##	
-        && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
+    && ln -s ${HOME_SITE} /var/www/wwwroot \
+    ##	
+    && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
 #	
 RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
 COPY laravel.ini $PHP_INI_DIR/conf.d/laravel.ini
@@ -299,7 +299,7 @@ COPY phpmyadmin-config.inc.php $PHPMYADMIN_SOURCE/
 COPY mariadb.cnf /etc/mysql/
 COPY phpmyadmin-default.conf $PHPMYADMIN_SOURCE/phpmyadmin-default.conf
 RUN \
-   echo "v0.3<?php phpinfo();" > /var/www/html/index.php 
+   echo "v0.4<?php phpinfo();" > /var/www/html/zindex.php 
 # =====
 # final
 # =====
