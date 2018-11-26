@@ -281,7 +281,7 @@ RUN set -ex\
     ##	
     && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
 #	
-RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
+#RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
 COPY laravel.ini $PHP_INI_DIR/conf.d/laravel.ini
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer 
 # ssh
@@ -293,17 +293,20 @@ COPY zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 # nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 #COPY default.conf /etc/nginx/conf.d/default.conf
-COPY hostingstart.html /var/www/html/index.html
+COPY hostingstart.html /var/www/wwwroot/public/index.html
 # phpmyadmin
 COPY phpmyadmin-config.inc.php $PHPMYADMIN_SOURCE/
 COPY mariadb.cnf /etc/mysql/
 COPY phpmyadmin-default.conf $PHPMYADMIN_SOURCE/phpmyadmin-default.conf
 RUN \
-   echo "v0.4<?php phpinfo();" > /var/www/html/zindex.php 
+   echo "v0.4<?php phpinfo();" > /var/www/wwwroot/public/zinfo.php 
 # =====
 # final
 # =====
 COPY init_container.sh /usr/local/bin/
+
+WORKDIR $HOME_SITE
+
 RUN chmod +x /usr/local/bin/init_container.sh
 #RUN chmod 777 /usr/local/bin/init_container.sh
 EXPOSE 2222 80
