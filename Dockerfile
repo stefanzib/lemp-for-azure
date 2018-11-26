@@ -67,7 +67,7 @@ RUN set -ex \
 # ------
 # imagick
 # ------
-	&& apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
     && export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
     && pecl install imagick-3.4.3 \
     && docker-php-ext-enable imagick \
@@ -77,9 +77,9 @@ RUN set -ex \
 # ------
 # others
 # ------
-#	&& docker-php-ext-configure opcache --enable-opcache \
-#	&& docker-php-ext-install iconv pdo_mysql intl xsl json soap dom zip opcache \
-#	&& docker-php-ext-enable iconv pdo_mysql intl xsl json soap dom zip opcache \
+#   && docker-php-ext-configure opcache --enable-opcache \
+#   && docker-php-ext-install iconv pdo_mysql intl xsl json soap dom zip opcache \
+#   && docker-php-ext-enable iconv pdo_mysql intl xsl json soap dom zip opcache \
 #   && docker-php-source delete \
 	
 # ------
@@ -277,7 +277,7 @@ RUN set -ex\
 	&& rm -rf /var/log/nginx \
 	&& ln -s $NGINX_LOG_DIR /var/log/nginx
 	##
-    # && ln -s ${HOME_SITE} /var/www/html \
+        && ln -s ${HOME_SITE} /var/www/html \
     ##	
     # && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
 #	
