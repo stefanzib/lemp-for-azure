@@ -279,7 +279,7 @@ RUN set -ex\
 	##
         && ln -s ${HOME_SITE} /var/www/html \
     ##	
-    # && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
+        && ln -s ${PHPMYADMIN_HOME} /var/www/phpmyadmin
 #	
 RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
 COPY laravel.ini $PHP_INI_DIR/conf.d/laravel.ini
