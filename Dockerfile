@@ -133,7 +133,7 @@ ENV PHP_VERSION 7.2.11
 ENV PORT 8080
 ENV WEBSITE_ROLE_INSTANCE_ID localRoleInstance
 ENV WEBSITE_INSTANCE_ID localInstance
-ENV PATH ${PATH}:/home/site/wwwroot
+ENV PATH ${PATH}:/home/site/wwwroot/public
 
 WORKDIR /var/www/html
 
