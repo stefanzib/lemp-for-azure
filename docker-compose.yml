@@ -5,6 +5,9 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    volumes:
+#      - ./../../../../www/sample:/var/www/html
+      - ./../../../../www/jti/services.chazapp.co:/var/www/html
     ports:
       - 8088:8080
 

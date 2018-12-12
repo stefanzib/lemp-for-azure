@@ -4,7 +4,6 @@ MAINTAINER Azure App Services Container Images <appsvc-images@microsoft.com>
 COPY apache2.conf /bin/
 COPY init_container.sh /bin/
 COPY hostingstart.html /home/site/wwwroot/hostingstart.html
-COPY index.php /home/site/wwwroot/public/index.php
 
 RUN a2enmod rewrite expires include deflate
 
@@ -30,6 +29,8 @@ RUN apt-get update \
         curl \
         wget \
         tcptraceroute \
+		git \
+		unzip \
     && chmod 755 /bin/init_container.sh \
     && echo "root:Docker!" | chpasswd \
     && echo "cd /home" >> /etc/bash.bashrc \
@@ -102,6 +103,7 @@ RUN   \
    && rm -rf /var/www/html \
    && rm -rf /var/log/apache2 \
    && mkdir -p /home/LogFiles \
+   && mkdir -p /home/site/wwwroot/public \
    && ln -s /home/site/wwwroot /var/www/html \
    && ln -s /home/LogFiles /var/log/apache2 
 
@@ -125,6 +127,10 @@ RUN { \
 
 COPY sshd_config /etc/ssh/
 
+COPY index.php /home/site/wwwroot/public/index.php
+
+RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer
+
 EXPOSE 2222 8080
 
 ENV APACHE_RUN_USER www-data
@@ -135,6 +141,6 @@ ENV WEBSITE_ROLE_INSTANCE_ID localRoleInstance
 ENV WEBSITE_INSTANCE_ID localInstance
 ENV PATH ${PATH}:/home/site/wwwroot/public
 
-WORKDIR /var/www/html
+WORKDIR /var/www/html/public
 
 ENTRYPOINT ["/bin/init_container.sh"]
