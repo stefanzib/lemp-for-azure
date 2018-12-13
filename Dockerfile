@@ -3,6 +3,8 @@ MAINTAINER Azure App Services Container Images <appsvc-images@microsoft.com>
 
 COPY apache2.conf /bin/
 COPY init_container.sh /bin/
+COPY opcache-recommended.ini /bin/
+COPY php.ini /bin/
 COPY hostingstart.html /home/site/wwwroot/hostingstart.html
 
 RUN a2enmod rewrite expires include deflate
@@ -100,30 +102,14 @@ RUN   \
    && chmod 777 /var/lock \
    && chmod 777 /bin/init_container.sh \
    && cp /bin/apache2.conf /etc/apache2/apache2.conf \
+   && cp /bin/php.ini /usr/local/etc/php/conf.d/php.ini \
+   && cp /bin/opcache-recommended.ini /usr/local/etc/php/conf.d/opcache-recommended.ini \
    && rm -rf /var/www/html \
    && rm -rf /var/log/apache2 \
    && mkdir -p /home/LogFiles \
    && mkdir -p /home/site/wwwroot/public \
    && ln -s /home/site/wwwroot /var/www/html \
    && ln -s /home/LogFiles /var/log/apache2 
-
-
-RUN { \
-                echo 'opcache.memory_consumption=128'; \
-                echo 'opcache.interned_strings_buffer=8'; \
-                echo 'opcache.max_accelerated_files=4000'; \
-                echo 'opcache.revalidate_freq=60'; \
-                echo 'opcache.fast_shutdown=1'; \
-                echo 'opcache.enable_cli=1'; \
-    } > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
-RUN { \
-                echo 'error_log=/var/log/apache2/php-error.log'; \
-                echo 'display_errors=Off'; \
-                echo 'log_errors=On'; \
-                echo 'display_startup_errors=Off'; \
-                echo 'date.timezone=UTC'; \
-    } > /usr/local/etc/php/conf.d/php.ini
 
 COPY sshd_config /etc/ssh/
 
